@@ -148,5 +148,5 @@ LLM generates answer with page citations
 ## Made By
 
 **Onkar Gajulwar**
-2nd Year Computer Science Student
+2nd Year Artificial Intelligence & Data Science Student
 K J Somaiya Institute of Technology, Mumbai
