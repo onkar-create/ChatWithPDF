@@ -148,4 +148,5 @@ LLM generates answer with page citations
 ## Made By
 
 **Onkar Gajulwar**
-Final Year College Project — AI-Powered Document Assistant
+2nd Year Computer Science Student
+K J Somaiya Institute of Technology, Mumbai
