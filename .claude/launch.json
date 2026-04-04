@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Frontend",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "C:\\Users\\onkar\\Desktop\\ChatWithPDF\\frontend"],
+      "port": 3000
+    },
+    {
+      "name": "Backend (FastAPI)",
+      "runtimeExecutable": "uvicorn",
+      "runtimeArgs": ["main:app", "--reload", "--port", "8000"],
+      "port": 8000
+    }
+  ]
+}

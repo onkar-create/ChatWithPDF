@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatWithPDF — AI PDF Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="pdf.css"/>
+</head>
+<body style="visibility:hidden">
+  <!-- 3D BACKGROUND CANVAS -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- MOBILE SIDEBAR TOGGLE -->
+  <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- FLOATING ORBS (CSS decorative) -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+
+  <!-- ============================
+       SIDEBAR
+       ============================ -->
+  <aside class="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-icon-wrap">
+        <i class="fa-solid fa-file-pdf"></i>
+      </div>
+      <div class="logo-text">
+        <span class="logo-main">ChatWith<span class="logo-accent">PDF</span></span>
+        <span class="logo-sub">AI Document Assistant</span>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="sidebar-section">
+      <p class="section-label"><i class="fa-solid fa-cloud-arrow-up"></i> Upload PDF</p>
+      <label class="upload-btn" for="pdfInput">
+        <div class="upload-icon-ring">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <span>Choose PDF File</span>
+        <small>or drag & drop</small>
+      </label>
+      <input type="file" id="pdfInput" accept=".pdf" multiple hidden/>
+      <div id="uploadStatus" class="upload-status"></div>
+    </div>
+
+    <!-- PDF List -->
+    <div class="sidebar-section sidebar-pdfs">
+      <p class="section-label"><i class="fa-solid fa-layer-group"></i> Your Documents <span id="pdfCountBadge" class="pdf-count-badge"></span></p>
+      <ul id="pdfList" class="pdf-list">
+        <li class="pdf-list-empty">
+          <i class="fa-solid fa-inbox"></i>
+          <span>No PDFs uploaded yet</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Sidebar Stats -->
+    <div class="sidebar-stats">
+      <div class="stat-pill">
+        <i class="fa-solid fa-bolt"></i>
+        <span>RAG Powered</span>
+      </div>
+      <div class="stat-pill">
+        <i class="fa-solid fa-database"></i>
+        <span>ChromaDB</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <span>Powered by LangChain + Ollama</span>
+    </div>
+  </aside>
+
+  <!-- ============================
+       MAIN CONTENT
+       ============================ -->
+  <main class="main-content">
+
+    <!-- Header Bar -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="header-title gradient-text">AI Document Intelligence</h1>
+        <p class="header-sub" id="activePdfLabel">Upload a PDF to get started</p>
+      </div>
+      <div class="header-right">
+        <div class="status-dot active"></div>
+        <span class="status-text">System Online</span>
+        <span id="usernameLabel" class="status-text" style="margin-left:12px;color:#6366f1;font-weight:600;"></span>
+        <button id="themeToggleBtn" class="btn btn-ghost btn-sm" title="Toggle Dark/Light mode" style="margin-left:8px;">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="helpBtn" class="btn btn-ghost btn-sm" title="Help" style="margin-left:4px;">
+          <i class="fa-solid fa-circle-question"></i>
+        </button>
+        <button id="logoutBtn" class="btn btn-ghost btn-sm" style="margin-left:4px;">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="chat">
+        <i class="fa-solid fa-comments"></i>
+        <span>Chat</span>
+        <div class="tab-indicator"></div>
+      </button>
+      <button class="tab-btn" data-tab="summary">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>Summary</span>
+        <div class="tab-indicator"></div>
+      </button>
+      <button class="tab-btn" data-tab="notes">
+        <i class="fa-solid fa-note-sticky"></i>
+        <span>Notes</span>
+        <div class="tab-indicator"></div>
+      </button>
+      <button class="tab-btn" data-tab="history">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>History</span>
+        <div class="tab-indicator"></div>
+      </button>
+    </nav>
+
+    <!-- ============================
+         TAB: CHAT
+         ============================ -->
+    <section id="tab-chat" class="tab-panel active">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <h2 class="panel-title">
+            <i class="fa-solid fa-robot"></i> Chat with PDF
+          </h2>
+          <span class="active-pdf-label" id="chatPdfLabel">No PDF selected</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="exportChatBtn" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-file-export"></i> Export
+          </button>
+          <button id="clearChatBtn" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-plus"></i> New Chat
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Messages Window -->
+      <div id="chatWindow" class="chat-window">
+        <div class="chat-welcome">
+          <div class="welcome-icon">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <h3 class="welcome-title gradient-text">Hello, I'm your AI Assistant!</h3>
+          <p class="welcome-desc">Upload a PDF from the sidebar and ask me anything about it. I'll retrieve the most relevant passages and craft a precise answer.</p>
+          <div class="welcome-chips">
+            <span class="chip"><i class="fa-solid fa-search"></i> Semantic Search</span>
+            <span class="chip"><i class="fa-solid fa-quote-left"></i> Citations</span>
+            <span class="chip"><i class="fa-solid fa-history"></i> Chat History</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input -->
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <textarea id="questionInput" class="chat-textarea" placeholder="Ask anything about your PDF..." rows="1"></textarea>
+          <button id="askBtn" class="ask-btn">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+        <p class="input-hint"><kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</p>
+      </div>
+    </section>
+
+    <!-- ============================
+         TAB: SUMMARY
+         ============================ -->
+    <section id="tab-summary" class="tab-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <h2 class="panel-title">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> PDF Summary
+          </h2>
+          <span class="active-pdf-label" id="summaryPdfLabel">No PDF selected</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="copySummaryBtn" class="btn btn-secondary btn-sm" style="display:none">
+            <i class="fa-regular fa-copy"></i> Copy
+          </button>
+          <button id="exportSummaryBtn" class="btn btn-secondary btn-sm" style="display:none">
+            <i class="fa-solid fa-file-export"></i> Export
+          </button>
+          <button id="refreshSummaryBtn" class="btn btn-ghost btn-sm" style="display:none" title="Regenerate">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+          <button id="generateSummaryBtn" class="btn btn-glow">
+            <i class="fa-solid fa-sparkles"></i> Generate Summary
+          </button>
+        </div>
+      </div>
+
+      <div id="summaryContent" class="summary-content">
+        <div class="empty-state">
+          <div class="empty-icon-wrap">
+            <i class="fa-solid fa-file-lines"></i>
+          </div>
+          <h3>No Summary Yet</h3>
+          <p>Select a PDF and click <strong>Generate Summary</strong> to extract key insights.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================
+         TAB: NOTES
+         ============================ -->
+    <section id="tab-notes" class="tab-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <h2 class="panel-title">
+            <i class="fa-solid fa-note-sticky"></i> My Notes
+          </h2>
+          <span class="active-pdf-label">Capture your insights</span>
+        </div>
+        <button id="exportNotesBtn" class="btn btn-success">
+          <i class="fa-solid fa-file-export"></i> Export .txt
+        </button>
+      </div>
+
+      <div class="note-input-area">
+        <div class="note-search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="noteSearch" class="note-search" placeholder="Search notes..."/>
+        </div>
+        <div class="note-input-wrap">
+          <textarea id="noteInput" class="note-textarea" placeholder="Write a note, idea, or insight..." rows="3" maxlength="1000"></textarea>
+          <span id="noteCharCount" class="note-char-count">0 / 1000</span>
+        </div>
+        <button id="saveNoteBtn" class="btn btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i> Save Note
+        </button>
+      </div>
+
+      <div id="notesList" class="notes-list">
+        <div class="empty-state">
+          <div class="empty-icon-wrap">
+            <i class="fa-solid fa-note-sticky"></i>
+          </div>
+          <h3>No Notes Yet</h3>
+          <p>Write a note above, or save any AI response as a note.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================
+         TAB: HISTORY
+         ============================ -->
+    <section id="tab-history" class="tab-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <h2 class="panel-title">
+            <i class="fa-solid fa-clock-rotate-left"></i> Chat History
+          </h2>
+          <span class="active-pdf-label" id="historyPdfLabel">No PDF selected</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="exportHistoryBtn" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-file-export"></i> Export
+          </button>
+          <button id="loadHistoryBtn" class="btn btn-secondary">
+            <i class="fa-solid fa-rotate"></i> Load History
+          </button>
+        </div>
+      </div>
+
+      <div id="historyContent" class="history-content">
+        <div class="empty-state">
+          <div class="empty-icon-wrap">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <h3>No History</h3>
+          <p>Select a PDF and click <strong>Load History</strong> to view past conversations.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-card">
+      <div class="loading-rings">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <i class="fa-solid fa-robot loading-icon"></i>
+      </div>
+      <p id="loadingText" class="loading-label">Processing...</p>
+      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- HELP MODAL -->
+  <div id="helpModal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-circle-question"></i> How to use ChatWithPDF</h3>
+        <button class="modal-close" id="helpModalClose"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="help-item"><i class="fa-solid fa-upload"></i><div><strong>Upload PDF</strong><p>Click the upload area or drag & drop a PDF file into the sidebar.</p></div></div>
+        <div class="help-item"><i class="fa-solid fa-comments"></i><div><strong>Ask Questions</strong><p>Select a PDF, type your question and press Enter or click Ask.</p></div></div>
+        <div class="help-item"><i class="fa-solid fa-eye"></i><div><strong>View PDF</strong><p>Double-click any PDF in the sidebar to open it in a new tab.</p></div></div>
+        <div class="help-item"><i class="fa-solid fa-list"></i><div><strong>Summary</strong><p>Click the Summary tab to get a 5-6 bullet point summary of your PDF.</p></div></div>
+        <div class="help-item"><i class="fa-solid fa-note-sticky"></i><div><strong>Notes</strong><p>Save important answers as notes. Pin, edit, or search your notes.</p></div></div>
+        <div class="help-item"><i class="fa-solid fa-clock-rotate-left"></i><div><strong>History</strong><p>View all past conversations with each PDF in the History tab.</p></div></div>
+        <div class="help-item"><i class="fa-solid fa-plus"></i><div><strong>New Chat</strong><p>Click "New Chat" to start a fresh conversation with the same PDF.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RENAME MODAL -->
+  <div id="renameModal" class="modal-overlay" style="display:none">
+    <div class="modal-box" style="max-width:380px">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-pen"></i> Rename PDF</h3>
+        <button class="modal-close" id="renameModalClose"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="renameInput" class="rename-input" placeholder="Enter new name..."/>
+        <button id="renameConfirmBtn" class="btn btn-primary" style="width:100%;margin-top:12px;">
+          <i class="fa-solid fa-check"></i> Rename
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- THREE.JS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- MARKED.JS — Markdown renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="pdf.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables (NEVER upload — contains passwords)
+.env
+
+# Database files
+*.db
+*.sqlite
+
+# ChromaDB vector store (large, auto-generated)
+backend/chroma_db/
+
+# Uploaded PDFs (user data)
+backend/data/uploads/
+backend/data/images/
+
+# JSON data files (user data)
+backend/data/*.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Node modules (if any)
+node_modules/

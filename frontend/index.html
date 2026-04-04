@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatWithPDF — AI Document Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="landing.css"/>
+</head>
+<body>
+
+  <!-- =====================ow
+       HERO SECTION
+       ===================== -->
+  <section class="hero">
+    <canvas id="hero-canvas"></canvas>
+
+    <!-- Floating PDF pages (decorative) -->
+    <div class="float-card card-1">
+      <i class="fa-solid fa-file-pdf"></i>
+      <span>research.pdf</span>
+    </div>
+    <div class="float-card card-2">
+      <i class="fa-solid fa-file-pdf"></i>
+      <span>thesis.pdf</span>
+    </div>
+    <div class="float-card card-3">
+      <i class="fa-solid fa-file-pdf"></i>
+      <span>report.pdf</span>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-bolt"></i> Powered by RAG + LangChain
+      </div>
+      <h1 class="hero-title">
+        Chat with your<br/>
+        <span class="typewriter" id="typewriter"></span>
+      </h1>
+      <p class="hero-sub">
+        Upload any PDF and have a real conversation with it.<br/>
+        Ask questions, get citations, generate summaries — instantly.
+      </p>
+      <div class="hero-btns">
+        <a href="auth.html" class="btn-launch">
+          <i class="fa-solid fa-rocket"></i> Get Started
+        </a>
+        <a href="#features" class="btn-learn">
+          Learn more <i class="fa-solid fa-arrow-down"></i>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>RAG</strong><span>Retrieval AI</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>ChromaDB</strong><span>Vector Search</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>GPT-4</strong><span>LLM Engine</span></div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- =====================
+       SECTION 1 — UPLOAD
+       ===================== -->
+  <section class="feat-section" id="features">
+    <div class="feat-left" id="feat1-left">
+      <div class="feat-mockup">
+        <div class="mockup-bar">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-upload">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Drop your PDF here</p>
+            <div class="mockup-progress">
+              <div class="mockup-progress-fill"></div>
+            </div>
+            <small>Processing chunks & embeddings...</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feat-right" id="feat1-right">
+      <div class="feat-number">01</div>
+      <h2>Upload & <span>Process</span></h2>
+      <p>Drop any PDF and our AI pipeline extracts text, splits it into chunks, generates vector embeddings, and stores them in ChromaDB — all in seconds.</p>
+      <ul class="feat-list">
+        <li><i class="fa-solid fa-check"></i> Multi-PDF support</li>
+        <li><i class="fa-solid fa-check"></i> Automatic chunking</li>
+        <li><i class="fa-solid fa-check"></i> Vector embeddings stored</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- =====================
+       SECTION 2 — CHAT
+       ===================== -->
+  <section class="feat-section feat-reverse">
+    <div class="feat-right" id="feat2-right">
+      <div class="feat-number">02</div>
+      <h2>Ask & <span>Discover</span></h2>
+      <p>Have a real conversation with your document. Our RAG pipeline retrieves the most relevant passages and feeds them to the LLM for precise, grounded answers.</p>
+      <ul class="feat-list">
+        <li><i class="fa-solid fa-check"></i> Semantic similarity search</li>
+        <li><i class="fa-solid fa-check"></i> Page-level citations</li>
+        <li><i class="fa-solid fa-check"></i> Full chat history</li>
+      </ul>
+    </div>
+    <div class="feat-left" id="feat2-left">
+      <div class="feat-mockup">
+        <div class="mockup-bar">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="mockup-body mockup-chat">
+          <div class="mock-bubble user">What is the main argument?</div>
+          <div class="mock-bubble ai">The main argument revolves around...</div>
+          <div class="mock-citation"><i class="fa-solid fa-quote-left"></i> Page 4, Paragraph 2</div>
+          <div class="mock-bubble user">Summarise section 3</div>
+          <div class="mock-bubble ai typing">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================
+       SECTION 3 — SCROLL CTA
+       ===================== -->
+  <section class="cta-section" id="cta-section">
+    <div class="cta-bg">
+      <canvas id="cta-canvas"></canvas>
+    </div>
+    <div class="cta-overlay" id="cta-overlay">
+      <p class="cta-eyebrow" id="cta-eyebrow">Your documents deserve better</p>
+      <h1 class="cta-title" id="cta-title">Stop reading.<br/>Start asking.</h1>
+      <p class="cta-sub" id="cta-sub">Upload once. Ask anything. Get answers with citations in seconds.</p>
+      <a href="pdf.html" class="cta-btn" id="cta-btn">
+        <i class="fa-solid fa-rocket"></i> Open ChatWithPDF
+      </a>
+    </div>
+  </section>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="landing.js"></script>
+</body>
+</html>
