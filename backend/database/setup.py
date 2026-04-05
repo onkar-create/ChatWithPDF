@@ -10,6 +10,16 @@ def create_tables():
     cur  = conn.cursor()
 
     cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            username      VARCHAR(100) NOT NULL UNIQUE,
+            email         VARCHAR(255) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            created_at    DATETIME     DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS pdfs (
             id          INT AUTO_INCREMENT PRIMARY KEY,
             pdf_id      VARCHAR(36)  NOT NULL UNIQUE,
