@@ -1,65 +1,21 @@
 # ============================================================
-# services/rag.py — LangChain RAG pipeline with Ollama + Memory + Vision
+# services/rag.py — LangChain RAG pipeline with Groq + Memory
 # ============================================================
 
 import os
-import base64
 from typing import List, Dict
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-import ollama as ollama_client
 
 from services.vector_store import get_retriever, similarity_search
 
-IMAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "images")
-
-VISION_KEYWORDS = {
-    "diagram", "image", "figure", "chart", "graph", "picture",
-    "illustration", "draw", "visual", "flowchart",
-    "screenshot", "photo", "sketch",
-}
-
-# ── LLMs ───────────────────────────────────────────────────
-def _get_llm() -> ChatOllama:
-    return ChatOllama(model="llama3.2:1b", temperature=0.2)
-
-
-def _is_visual_question(question: str) -> bool:
-    q = question.lower()
-    return any(kw in q for kw in VISION_KEYWORDS)
-
-
-def _load_image_b64(path: str) -> str:
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
-
-
-def _answer_with_vision(pdf_id: str, question: str, pages: List[int]) -> str:
-    """Uses moondream to answer questions about page images."""
-    img_dir = os.path.join(IMAGES_DIR, pdf_id)
-
-    for page in pages:
-        img_path = os.path.join(img_dir, f"page_{page}.jpg")
-        if os.path.exists(img_path):
-            try:
-                response = ollama_client.chat(
-                    model="moondream",
-                    messages=[{
-                        "role": "user",
-                        "content": (
-                            "You are analyzing a PDF page image.\n"
-                            "Answer the following question based on what you see.\n"
-                            "Be specific about any diagrams, charts, tables, or figures.\n\n"
-                            f"Question: {question}"
-                        ),
-                        "images": [img_path],
-                    }]
-                )
-                return response["message"]["content"].strip()
-            except Exception:
-                continue
-
-    return None  # fall back to text
+# ── LLM ────────────────────────────────────────────────────
+def _get_llm() -> ChatGroq:
+    return ChatGroq(
+        model="llama-3.1-8b-instant",
+        api_key=os.getenv("GROQ_API_KEY"),
+        temperature=0.2,
+    )
 
 
 # ── Per-PDF conversation history (in-process) ──────────────
@@ -109,16 +65,8 @@ def answer_question(pdf_id: str, question: str) -> Dict:
 
     messages.append(HumanMessage(content=question))
 
-    # Step 3 — Use moondream for visual questions, llama3.2:1b for text
-    retrieved_pages = list({d.metadata.get("page", 0) for d in docs})
-    if _is_visual_question(question):
-        vision_answer = _answer_with_vision(pdf_id, question, retrieved_pages)
-        if vision_answer:
-            answer = vision_answer
-        else:
-            answer = _get_llm().invoke(messages).content.strip()
-    else:
-        answer = _get_llm().invoke(messages).content.strip()
+    # Step 3 — Call Groq LLM
+    answer = _get_llm().invoke(messages).content.strip()
 
     # Step 4 — Save to memory
     if pdf_id not in _histories:
@@ -150,7 +98,6 @@ def generate_summary(pdf_id: str) -> List[str]:
         return ["Could not generate a summary — no content found in the document."]
 
     combined_text = "\n\n".join(c["text"] for c in chunks)
-    llm = _get_llm()
     messages = [
         SystemMessage(content=(
             "You are a document summarizer.\n"
@@ -162,7 +109,7 @@ def generate_summary(pdf_id: str) -> List[str]:
         HumanMessage(content=combined_text),
     ]
 
-    response = llm.invoke(messages)
+    response = _get_llm().invoke(messages)
     raw      = response.content.strip()
     lines    = [
         line.strip().lstrip("-•* ").strip()

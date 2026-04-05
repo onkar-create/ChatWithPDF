@@ -736,6 +736,8 @@ els.saveNoteBtn.addEventListener('click', () => {
   if (!content) { showToast('Note is empty', 'error'); return; }
   saveNote(content, 'user');
   els.noteInput.value = '';
+  noteCharCount.textContent = '0 / 1000';
+  noteCharCount.style.color = '';
 });
 
 async function saveNote(content, source = 'user') {
@@ -1085,18 +1087,27 @@ document.getElementById('renameModal').addEventListener('click', (e) => {
   if (e.target === document.getElementById('renameModal'))
     document.getElementById('renameModal').style.display = 'none';
 });
-document.getElementById('renameConfirmBtn').addEventListener('click', () => {
+document.getElementById('renameConfirmBtn').addEventListener('click', async () => {
   const newName = document.getElementById('renameInput').value.trim();
   if (!newName || !_renamePdfId) return;
   const fullName = newName.endsWith('.pdf') ? newName : newName + '.pdf';
-  const pdf = state.pdfs.find(p => p.pdf_id === _renamePdfId);
-  if (pdf) {
-    pdf.file_name = fullName;
-    renderPdfList();
-    if (state.activePdfId === _renamePdfId) {
-      els.activePdfLabel.textContent = `📄 ${fullName}`;
+  try {
+    await apiFetch(`${API_BASE}/pdf/${_renamePdfId}/rename`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_name: fullName }),
+    });
+    const pdf = state.pdfs.find(p => p.pdf_id === _renamePdfId);
+    if (pdf) {
+      pdf.file_name = fullName;
+      renderPdfList();
+      if (state.activePdfId === _renamePdfId) {
+        els.activePdfLabel.textContent = `📄 ${fullName}`;
+      }
     }
     showToast('PDF renamed', 'success');
+  } catch {
+    showToast('Rename failed', 'error');
   }
   document.getElementById('renameModal').style.display = 'none';
 });

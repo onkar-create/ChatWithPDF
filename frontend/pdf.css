@@ -1034,10 +1034,9 @@ body {
    ============================================================ */
 .pdf-list-item { position: relative; }
 .pdf-delete-btn {
-  display: none;
+  display: flex;
   align-items: center; justify-content: center;
   width: 20px; height: 20px;
-  margin-left: auto; flex-shrink: 0;
   background: rgba(239,68,68,0.15);
   border: none; border-radius: 4px;
   color: #ef4444; cursor: pointer;
@@ -1045,7 +1044,6 @@ body {
   transition: background 0.2s;
 }
 .pdf-delete-btn:hover { background: rgba(239,68,68,0.35); }
-.pdf-list-item:hover .pdf-delete-btn { display: flex; }
 
 /* ============================================================
    SKELETON LOADING

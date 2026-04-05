@@ -60,6 +60,10 @@ class NoteUpdateRequest(BaseModel):
     content: str
 
 
+class RenamePdfRequest(BaseModel):
+    file_name: str
+
+
 class NoteResponse(BaseModel):
     note_id: str
     content: str

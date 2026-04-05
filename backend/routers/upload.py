@@ -8,10 +8,10 @@ import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import FileResponse
 
-from schemas import UploadResponse
+from schemas import UploadResponse, RenamePdfRequest
 from services.pdf_processor import extract_text_by_page, chunk_pages, extract_page_images
 from services.vector_store import store_chunks, delete_collection
-from storage import clear_chat_history, delete_summary_cache, save_pdf, delete_pdf_record, get_all_pdfs
+from storage import clear_chat_history, delete_summary_cache, save_pdf, delete_pdf_record, get_all_pdfs, rename_pdf
 from auth import get_current_user
 
 IMAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "images")
@@ -73,6 +73,14 @@ async def upload_pdf(file: UploadFile = File(...), current_user: dict = Depends(
         page_count=len(pages),
         message="PDF uploaded and processed successfully.",
     )
+
+
+@router.patch("/pdf/{pdf_id}/rename")
+async def rename_pdf_endpoint(pdf_id: str, body: RenamePdfRequest, current_user: dict = Depends(get_current_user)):
+    if not body.file_name.strip():
+        raise HTTPException(status_code=400, detail="file_name is required.")
+    rename_pdf(pdf_id, body.file_name.strip())
+    return {"message": "Renamed successfully."}
 
 
 @router.get("/pdfs")

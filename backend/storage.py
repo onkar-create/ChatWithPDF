@@ -31,6 +31,14 @@ def save_pdf(pdf_id: str, file_name: str, user_id: int, page_count: int = 0) -> 
     cur.close(); conn.close()
 
 
+def rename_pdf(pdf_id: str, file_name: str) -> None:
+    conn = get_db()
+    cur  = conn.cursor()
+    cur.execute("UPDATE pdfs SET file_name = %s WHERE pdf_id = %s", (file_name, pdf_id))
+    conn.commit()
+    cur.close(); conn.close()
+
+
 def delete_pdf_record(pdf_id: str) -> None:
     conn = get_db()
     cur  = conn.cursor()
