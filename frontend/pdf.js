@@ -2,7 +2,7 @@
    ChatWithPDF — Frontend Logic + Three.js 3D Background
    ============================================================ */
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'https://chatwithpdf-production.up.railway.app';
 
 // Auth-aware fetch — automatically adds Bearer token to every request
 function apiFetch(url, options = {}) {
