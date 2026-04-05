@@ -25,8 +25,8 @@ async def ask_question(body: ChatRequest):
         result = answer_question(body.pdf_id, body.question.strip())
     except Exception as e:
         err = str(e).lower()
-        if "connection refused" in err or "404" in err or "not found" in err:
-            raise HTTPException(status_code=503, detail="AI model is not running. Please start Ollama and try again.")
+        if "connection refused" in err or "404" in err or "not found" in err or "api key" in err or "authentication" in err:
+            raise HTTPException(status_code=503, detail="AI service unavailable. Please check your Groq API key.")
         raise HTTPException(status_code=500, detail=f"AI error: {str(e)}")
 
     timestamp = datetime.now(timezone.utc).isoformat()
