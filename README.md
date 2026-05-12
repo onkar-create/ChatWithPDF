@@ -119,6 +119,73 @@ Open `frontend/index.html` in your browser.
 
 ---
 
+## Connecting from Another Device (Same Wi-Fi)
+
+If you want to access ChatWithPDF from your phone, tablet, or another PC on the same network, follow these steps.
+
+### Step 1 — Find your laptop's local IP
+
+**Windows:**
+```
+ipconfig
+```
+Look for **IPv4 Address** under your Wi-Fi adapter, e.g. `192.168.1.42`
+
+**Mac / Linux:**
+```bash
+ip a
+# or
+ifconfig
+```
+Look for `inet` under your Wi-Fi interface (e.g. `wlan0` or `en0`).
+
+### Step 2 — Start the backend on all interfaces
+
+Instead of the default command, run:
+
+```bash
+cd backend
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The `--host 0.0.0.0` flag makes the server listen on every network interface on your laptop, not just `localhost`.
+
+### Step 3 — Point the frontend at your laptop's IP
+
+Open `frontend/pdf.js` and change line 5:
+
+```js
+// Before
+const API_BASE = 'http://localhost:8000';
+
+// After — replace with your actual IP from Step 1
+const API_BASE = 'http://192.168.1.42:8000';
+```
+
+Do the same in `frontend/auth.html` if it has its own `API_BASE` variable.
+
+### Step 4 — Allow the port through your firewall (Windows only)
+
+```
+Windows Defender Firewall → Advanced Settings
+→ Inbound Rules → New Rule
+→ Port → TCP 8000 → Allow the connection
+```
+
+### Step 5 — Open on the other device
+
+On your phone or second computer (connected to the **same Wi-Fi**), open a browser and go to:
+
+```
+http://192.168.1.42:8000
+```
+
+Replace `192.168.1.42` with your actual IP. You can also open the `frontend/index.html` file directly in a browser on that device, as long as `API_BASE` points to the correct IP.
+
+> **Note:** This only works on the same local network. To access from outside your home network you would need port forwarding or a tool like ngrok.
+
+---
+
 ## How It Works
 
 ```
